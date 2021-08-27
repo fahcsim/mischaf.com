@@ -3,12 +3,17 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://www.mischaf.com/posts/desolation_north_lakes_tour/</loc>
-    <lastmod>2021-08-26T15:52:47-07:00</lastmod>
+    <loc>http://www.mischaf.com/about/</loc>
+    <lastmod>2021-08-26T18:59:55-07:00</lastmod>
   </url>
   
   <url>
     <loc>http://www.mischaf.com/</loc>
+    <lastmod>2021-08-26T18:59:55-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.mischaf.com/posts/desolation_north_lakes_tour/</loc>
     <lastmod>2021-08-26T15:52:47-07:00</lastmod>
   </url>
   
