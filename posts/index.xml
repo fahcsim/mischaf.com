@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Mischa Friegang</title>
+    <link>http://www.mischaf.com/posts/</link>
+    <description>Recent content in Posts on Mischa Friegang</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 26 Aug 2021 15:52:47 -0700</lastBuildDate>
+    
+	<atom:link href="http://www.mischaf.com/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Desolation Wilderness North Lakes Tour</title>
+      <link>http://www.mischaf.com/posts/desolation_north_lakes_tour/</link>
+      <pubDate>Thu, 26 Aug 2021 15:52:47 -0700</pubDate>
+      
+      <guid>http://www.mischaf.com/posts/desolation_north_lakes_tour/</guid>
+      <description>June 27th, 2020 My Dad, Jed and I went on this hike with the intention of doing a shakedown overnight trip to test our legs and gear for our upcoming PCT section hike. We arrived at the trail head at 7:30 that morning and started towards the Forni lake trail with plenty of mosquitoes to keep us company. The first leg of the journey was fairly uneventful, I’ve hiked to Forni lake probably a dozen times or so.</description>
+    </item>
+    
+    <item>
+      <title>Hello World</title>
+      <link>http://www.mischaf.com/posts/helloworld/</link>
+      <pubDate>Thu, 26 Aug 2021 15:47:50 -0700</pubDate>
+      
+      <guid>http://www.mischaf.com/posts/helloworld/</guid>
+      <description>Hello from my first Hugo Post. This marks the start of the process of migrating away from Wordpress to something more lightweight. Lots of cleanup and tweaking to do&amp;hellip;</description>
+    </item>
+    
+  </channel>
+</rss>
