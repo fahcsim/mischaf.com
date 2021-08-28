@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <meta name="color-scheme" content="light dark">
+
+    
+      <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self'; img-src 'self' https://m1sc.net; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' https://www.google-analytics.com; prefetch-src 'self'; connect-src 'self' https://www.google-analytics.com https://m1sc.net;">
+
+    
+
+    <meta name="author" content="Mischa Friegang">
+    <meta name="description" content="Adventures with Wireguard Where I live there are essentially 2 options for(usable in this day and age) internet, you go with one of the local WISPs, or you use LTE in some form. The latter of the 2 is what I have ended up with after a few years of spotty and slow sevice with 2 different WISPs. It has some limitations, but I&rsquo;m able to get 40-50Mbps down and 10-15Mbps up consistently.">
+    <meta name="keywords" content="blog">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="My Wireguard CGNAT Traversal Setup"/>
+<meta name="twitter:description" content="Adventures with Wireguard Where I live there are essentially 2 options for(usable in this day and age) internet, you go with one of the local WISPs, or you use LTE in some form. The latter of the 2 is what I have ended up with after a few years of spotty and slow sevice with 2 different WISPs. It has some limitations, but I&rsquo;m able to get 40-50Mbps down and 10-15Mbps up consistently."/>
+
+    <meta property="og:title" content="My Wireguard CGNAT Traversal Setup" />
+<meta property="og:description" content="Adventures with Wireguard Where I live there are essentially 2 options for(usable in this day and age) internet, you go with one of the local WISPs, or you use LTE in some form. The latter of the 2 is what I have ended up with after a few years of spotty and slow sevice with 2 different WISPs. It has some limitations, but I&rsquo;m able to get 40-50Mbps down and 10-15Mbps up consistently." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://www.mischaf.com/posts/wireguard_setup/" />
+<meta property="article:published_time" content="2021-08-28T11:47:13-07:00" />
+<meta property="article:modified_time" content="2021-08-28T11:47:13-07:00" />
+
+
+    <title>
+  My Wireguard CGNAT Traversal Setup · Mischa Friegang
+</title>
+
+    
+      <link rel="canonical" href="http://www.mischaf.com/posts/wireguard_setup/">
+    
+
+    <link rel="preload" href="/fonts/forkawesome-webfont.woff2?v=1.2.0" as="font" type="font/woff2" crossorigin>
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.8e2b2510f60e1715eae08d113a808dcdaf17f6f711edb9e969be38d0074d240d.css" integrity="sha256-jislEPYOFxXq4I0ROoCNza8X9vcR7bnpab440AdNJA0=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="/css/coder-dark.min.aa883b9ce35a8ff4a2a5008619005175e842bb18a8a9f9cc2bbcf44dab2d91fa.css" integrity="sha256-qog7nONaj/SipQCGGQBRdehCuxioqfnMK7z0Tastkfo=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+    
+
+    <meta name="generator" content="Hugo 0.68.3" />
+  </head>
+
+  
+  
+    
+  
+  <body class="preload-transitions colorscheme-auto"
+        onload=""
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Mischa Friegang
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="http://www.mischaf.com/posts/wireguard_setup/">
+              My Wireguard CGNAT Traversal Setup
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime='2021-08-28T11:47:13-07:00'>
+                August 28, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              7-minute read
+            </span>
+          </div>
+          
+          
+          
+        </div>
+      </header>
+
+      <div>
+        
+        <h1 id="adventures-with-wireguard">Adventures with Wireguard</h1>
+<p>Where I live there are essentially 2 options for(usable in this day and age) internet, you go with one of the local WISPs, or you use LTE in some form. The latter of the 2 is what I have ended up with after a few years of spotty and slow sevice with 2 different WISPs. It has some limitations, but I&rsquo;m able to get 40-50Mbps down and 10-15Mbps up consistently. Someday Elon Musk and Starlink will save me, but for now it works.
+One of said limitations of using a Verizon LTE connection is Verizon&rsquo;s CGNAT. This is Verizon&rsquo;s way of continuing to use it&rsquo;s finite supply of V4 addresses for a large pool of customers. This can be a big pain when trying to port forward services from you LAN to the internet(which probably isn&rsquo;t the smartest thing to do anyways). That said, I do have some services on the LAN that are really handy to have access to while away from the house. The most important one for me is Home Assistant, but other things like Blue Iris, or even just being able to ssh into a box can come in really handy.
+While researching this issue, I initially avoided using VPNs as I had used Open VPN in the past, but wasn&rsquo;t impressed by the performance or ease of setup. I successfully used a few things such as ssh tunnels, NGROK, and another project who&rsquo;s name escapes me. All of them did the job, but had their quirks. It never really reached the level of reliability to just set and forget.
+Eventually, I stumbled upon Wireguard, and by stumble, I mean I read so many comments in forums and reddit posts suggesting it that I caved and decided to try it. Initially the setup seemed a bit complicated, but after getting it working I realized that it performed really well. Probably the fastest connection that I was able to get out of any of the solutions that I had tried. Now I&rsquo;m going to go into some of the details of how I got this set up as both a resource for anyone that finds my humble little blog looking for answers, and as documentation for my future self.</p>
+<h1 id="things-needed">Things needed:</h1>
+<ol>
+<li>A device capable of running Wireguard and doing IP forwarding to other devices on the LAN.</li>
+<li>A VPS, or a computer somewhere that has a publically routable IP address.</li>
+<li>Some client to connect from outside the lan, such as a cell phone.</li>
+<li>~30 Minutes of your time</li>
+</ol>
+<h1 id="setup">Setup:</h1>
+<ol>
+<li>The first logical step is to get Wireguard installed on the VPS. In my case I&rsquo;m using Ubunto 20.04, which has Wireguard support baked into the kernel. If you&rsquo;re using a different distro, it may be as simple as <code>&lt;package manager&gt; install wireguard</code>. If not, consult the Wireguard docs.
+It&rsquo;s alwaays a good idea to update your repo sources before installing something.
+<code>sudo apt update</code>
+Now you should be good to install the Wireguard package.
+<code>apt install wireguard</code></li>
+<li>Now that we have the package installed, its time to get the server configured. Wireguard stores its config under <code>/etc/wireguard</code> by default. I prefer the vim editor, but nano is another good option if you don&rsquo;t feel like learning how to use vim.
+<code>sudo vim /etc/wireguard/wg0.conf</code> creates a new file under the <code>/etc/wireguard</code> directory, and opens vim to edit the file.</li>
+<li>In my case, the file looks like this:</li>
+</ol>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Interface]
+PrivateKey = &lt;your private key&gt;
+ListenPort = 51820
+Address = 10.0.50.1/24
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+[Peer]
+PublicKey = &lt;your public key&gt;
+AllowedIPs = 10.0.50.2/32 ,10.0.0.0/24,  192.168.0.0/24
+</code></pre></div><p>Let&rsquo;s break this down a bit. Everything under <code>[Interface]</code> is describing the interface on the local(to the config file) machine, in this case wg0.</p>
+<ul>
+<li>To get a private key, you can run <code>wg genkey | tee privatekey | wg pubkey &gt; publickey</code> to generate 2 files, <code>publickey</code> and <code>privatekey</code>. The private key should never leave this machine, and it&rsquo;s content can be pasted into the config file. We will use the public key for the config of the clients later.</li>
+<li>The listen port is fairly self explanitory, the port that Wireguard is listening on. You can change this for some added security, but that&rsquo;s arguably more obscurity than security.</li>
+<li>The address the is the address that the interface (wg0 in this case) will use.</li>
+<li><code>Postup</code> is for running a command after the interface comes up. Here we are using some iptables rules to</li>
+<li><code>PostDown</code> is the opposite of PostUp. Here we are deleting the iptables entries after wg0 does down.
+Everything under <code>[Peer]</code> describes another node on the wireguard network. You can make multiple if you want multiple nodes.</li>
+<li>The public key can be generated on the peer later, and pasted into here</li>
+</ul>
+<ol start="4">
+<li>Now that we have the config mostly set up on the VPS, we can configure the device on the LAN to act as a gateway. Follow steps 1 and 2 again on the LAN device, and generate another keypair on this device. <code>wg genkey | tee privatekey | wg pubkey &gt; publickey</code></li>
+<li>Edit <code>/etc/wireguard/wg0.conf</code> on this device now, the config should look something like this:</li>
+</ol>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Interface]
+PrivateKey=&lt;your private key&gt;
+Address=10.0.50.2
+ListenPort=51820
+PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT
+PostUp = sysctl net.ipv4.ip_forward=1
+PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT
+PostDown = sysctl net.ipv4.ip_forward=0
+[Peer]
+PublicKey=&lt;your public key&gt;
+AllowedIPs=0.0.0.0/0
+PersistentKeepalive=25
+Endpoint=&lt;vps public IP address&gt;:51820
+</code></pre></div><ul>
+<li>The public key will be the public key we generated on the VPS</li>
+<li><code>AllowedIPs</code> is for which IP address ranges you want to allow to communicate with the interface wg0. You can use a /32 if you only want a single IP, a /24 for a standard network, or really anything including 0.0.0.0/0 if you want to allow all traffic.</li>
+<li><code>PersistentKeepAlive</code> keeps the tunnel alive by sending packets as often as you tell it to. 25 seconds seems to be what most people use, and it&rsquo;s worked well for me</li>
+<li><code>Endpoint</code> is the address of the Wireguard server, in this case the VPS. You can use an IP or a dns name here, and make sure to include the port number.</li>
+</ul>
+<ol start="6">
+<li>Grab the public key from the LAN device, and go paste it into the VPS config under the <code>Peer</code> section.</li>
+<li>Now we should be able to fire up the interfaces. Do to this, run <code>wg-quick up wg0</code> on both devices. Try sending a ping from one interface to the other, and vice versa. If everything was set up correctly, you should be seeing replies. Ping a device on the LAN from the VPS, that should also work and indicates that the ip forwarding rules worked. If it&rsquo;s not, check if ip forwarding is enabled on the LAN side with the command <code>sysctl net.ipv4.ip_forward</code>. 0 indicates it being disabled, 1 indicates it being enabled.</li>
+<li>Now you can configure a mobile device. I have an Android phone, and was able to install the Wireguard app from the Play Store. The configuration is pretty straight forward and similar to the other devices. You can even generate a keypair with a button on the mobile app. If you&rsquo;d like to tunnel all traffic through the VPN, use <code>0.0.0.0/0</code> for the allowed IPs. If not, use the subnet for the wireguard itnerface, 10.0.50.0/24, and whichever LAN subnets you want access to. Copy the public key for the <code>[Peer]</code> entry on the VPS which should look like this:</li>
+</ol>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Peer]
+PublicKey = &lt;your public key&gt;
+AllowedIPs = 10.0.50.3/32
+</code></pre></div><p><img src="https://s3.us-west-1.wasabisys.com/web-assets/wg_mobile_config.png" alt="Wireguard Mobile Config">
+9. At this point everything should be working. If you&rsquo;re having issues, a good place to start is using the tcpdump command, and logically going through the steps of what needs to happen. I had some difficulties the first few times I set this up, but have no issues repeating it now.
+10. For bonus points, run PiHole either on the VPS, or somehwere on your LAN, and point to it for DNS on the smartphone config. This will give you always on ad blocking if you use the full tunnel option. I run my phone with the full tunnel on alomst 100% of the time, save for the few services that act weird when you use a VPS public IP address(looking at you, Netflix).</p>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+      
+        ©
+        
+          2019 -
+        
+        2021
+         Mischa Friegang 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+      
+      
+        
+      
+    </section>
+  </footer>
+
+
+    </main>
+
+    
+      
+      <script src="/js/coder.min.a350362441276ec5c1671926420497bb8e52b63ead1d51d3c9bc4342d0039526.js" integrity="sha256-o1A2JEEnbsXBZxkmQgSXu45Stj6tHVHTybxDQtADlSY="></script>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </body>
+
+</html>
