@@ -12,6 +12,15 @@
     
     
     <item>
+      <title>My Wireguard CGNAT Traversal Setup</title>
+      <link>http://www.mischaf.com/posts/wireguard_setup/</link>
+      <pubDate>Sat, 28 Aug 2021 11:47:13 -0700</pubDate>
+      
+      <guid>http://www.mischaf.com/posts/wireguard_setup/</guid>
+      <description>Adventures with Wireguard Where I live there are essentially 2 options for(usable in this day and age) internet, you go with one of the local WISPs, or you use LTE in some form. The latter of the 2 is what I have ended up with after a few years of spotty and slow sevice with 2 different WISPs. It has some limitations, but I&amp;rsquo;m able to get 40-50Mbps down and 10-15Mbps up consistently.</description>
+    </item>
+    
+    <item>
       <title>About</title>
       <link>http://www.mischaf.com/about/</link>
       <pubDate>Thu, 26 Aug 2021 18:59:55 -0700</pubDate>
