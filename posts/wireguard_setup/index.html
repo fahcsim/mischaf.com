@@ -150,7 +150,7 @@
         <p>Where I live there are essentially 2 options for(usable in this day and age) internet, you go with one of the local WISPs, or you use LTE in some form. The latter of the 2 is what I have ended up with after a few years of spotty and slow sevice with 2 different WISPs. It has some limitations, but I&rsquo;m able to get 40-50Mbps down and 10-15Mbps up consistently. Someday Elon Musk and Starlink will save me, but for now it works.
 One of said limitations of using a Verizon LTE connection is Verizon&rsquo;s CGNAT. This is Verizon&rsquo;s way of continuing to use it&rsquo;s finite supply of V4 addresses for a large pool of customers. This can be a big pain when trying to port forward services from you LAN to the internet(which probably isn&rsquo;t the smartest thing to do anyways). That said, I do have some services on the LAN that are really handy to have access to while away from the house. The most important one for me is Home Assistant, but other things like Blue Iris, or even just being able to ssh into a box can come in really handy.
 While researching this issue, I initially avoided using VPNs as I had used Open VPN in the past, but wasn&rsquo;t impressed by the performance or ease of setup. I successfully used a few things such as ssh tunnels, NGROK, and another project who&rsquo;s name escapes me. All of them did the job, but had their quirks. It never really reached the level of reliability to just set and forget.
-Eventually, I stumbled upon Wireguard, and by stumble, I mean I read so many comments in forums and reddit posts suggesting it that I caved and decided to try it. Initially the setup seemed a bit complicated, but after getting it working I realized that it performed really well. Probably the fastest connection that I was able to get out of any of the solutions that I had tried. Now I&rsquo;m going to go into some of the details of how I got this set up as both a resource for anyone that finds my humble little blog looking for answers, and as documentation for my future self.</p>
+Eventually, I stumbled upon Wireguard, and by stumble, I mean I read so many comments in forums and reddit posts suggesting it that I caved and decided to try it. Initially the setup seemed a bit complicated, but after getting it working I realized that it performed really well. Probably the fastest connection that I was able to get out of any of the solutions that I had tried. I now run a full tunnel on my phone that directs tunnels everything to either my LAN, or through the VPS. This makes sketchy free WiFi a lot safer, and I hardly notice any speed penalty. Now I&rsquo;m going to go into some of the details of how I got this set up as both a resource for anyone that finds my humble little blog looking for answers, and as documentation for my future self.</p>
 <h1 id="things-needed">Things needed:</h1>
 <ol>
 <li>A device capable of running Wireguard and doing IP forwarding to other devices on the LAN.</li>
@@ -169,7 +169,7 @@ Now you should be good to install the Wireguard package.
 <code>sudo vim /etc/wireguard/wg0.conf</code> creates a new file under the <code>/etc/wireguard</code> directory, and opens vim to edit the file.</li>
 <li>In my case, the file looks like this:</li>
 </ol>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Interface]
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Interface]
 PrivateKey = &lt;your private key&gt;
 ListenPort = 51820
 Address = 10.0.50.1/24
@@ -183,16 +183,18 @@ AllowedIPs = 10.0.50.2/32 ,10.0.0.0/24,  192.168.0.0/24
 <li>To get a private key, you can run <code>wg genkey | tee privatekey | wg pubkey &gt; publickey</code> to generate 2 files, <code>publickey</code> and <code>privatekey</code>. The private key should never leave this machine, and it&rsquo;s content can be pasted into the config file. We will use the public key for the config of the clients later.</li>
 <li>The listen port is fairly self explanitory, the port that Wireguard is listening on. You can change this for some added security, but that&rsquo;s arguably more obscurity than security.</li>
 <li>The address the is the address that the interface (wg0 in this case) will use.</li>
-<li><code>Postup</code> is for running a command after the interface comes up. Here we are using some iptables rules to</li>
-<li><code>PostDown</code> is the opposite of PostUp. Here we are deleting the iptables entries after wg0 does down.
-Everything under <code>[Peer]</code> describes another node on the wireguard network. You can make multiple if you want multiple nodes.</li>
-<li>The public key can be generated on the peer later, and pasted into here</li>
+<li><code>Postup</code> is for running a command after the interface comes up. Here we are using some iptables rules to accept incoming and outgoing traffic from the Wireguard interface, and then routing traffic from wg0 to eth0.</li>
+<li><code>PostDown</code> is the opposite of PostUp. Here we are deleting the iptables entries after wg0 does down.</li>
+</ul>
+<p>Everything under <code>[Peer]</code> describes another node on the wireguard network. You can make multiple if you want multiple nodes.</p>
+<ul>
+<li>The public key can be generated on the peer later, and pasted into here.</li>
 </ul>
 <ol start="4">
 <li>Now that we have the config mostly set up on the VPS, we can configure the device on the LAN to act as a gateway. Follow steps 1 and 2 again on the LAN device, and generate another keypair on this device. <code>wg genkey | tee privatekey | wg pubkey &gt; publickey</code></li>
 <li>Edit <code>/etc/wireguard/wg0.conf</code> on this device now, the config should look something like this:</li>
 </ol>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Interface]
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Interface]
 PrivateKey=&lt;your private key&gt;
 Address=10.0.50.2
 ListenPort=51820
@@ -215,15 +217,15 @@ Endpoint=&lt;vps public IP address&gt;:51820
 </ul>
 <ol start="6">
 <li>Grab the public key from the LAN device, and go paste it into the VPS config under the <code>Peer</code> section.</li>
-<li>Now we should be able to fire up the interfaces. Do to this, run <code>wg-quick up wg0</code> on both devices. Try sending a ping from one interface to the other, and vice versa. If everything was set up correctly, you should be seeing replies. Ping a device on the LAN from the VPS, that should also work and indicates that the ip forwarding rules worked. If it&rsquo;s not, check if ip forwarding is enabled on the LAN side with the command <code>sysctl net.ipv4.ip_forward</code>. 0 indicates it being disabled, 1 indicates it being enabled.</li>
+<li>Now we should be able to fire up the interfaces. To do this, run <code>wg-quick up wg0</code> on both devices. Try sending a ping from one interface to the other, and vice versa. If everything was set up correctly, you should be seeing replies. Ping a device on the LAN from the VPS, that should also work and indicates that the ip forwarding rules worked. If it&rsquo;s not, check if ip forwarding is enabled on the LAN side with the command <code>sysctl net.ipv4.ip_forward</code>. 0 indicates it being disabled, 1 indicates it being enabled.</li>
 <li>Now you can configure a mobile device. I have an Android phone, and was able to install the Wireguard app from the Play Store. The configuration is pretty straight forward and similar to the other devices. You can even generate a keypair with a button on the mobile app. If you&rsquo;d like to tunnel all traffic through the VPN, use <code>0.0.0.0/0</code> for the allowed IPs. If not, use the subnet for the wireguard itnerface, 10.0.50.0/24, and whichever LAN subnets you want access to. Copy the public key for the <code>[Peer]</code> entry on the VPS which should look like this:</li>
 </ol>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Peer]
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[Peer]
 PublicKey = &lt;your public key&gt;
 AllowedIPs = 10.0.50.3/32
 </code></pre></div><p><img src="https://s3.us-west-1.wasabisys.com/web-assets/wg_mobile_config.png" alt="Wireguard Mobile Config">
 9. At this point everything should be working. If you&rsquo;re having issues, a good place to start is using the tcpdump command, and logically going through the steps of what needs to happen. I had some difficulties the first few times I set this up, but have no issues repeating it now.
-10. For bonus points, run PiHole either on the VPS, or somehwere on your LAN, and point to it for DNS on the smartphone config. This will give you always on ad blocking if you use the full tunnel option. I run my phone with the full tunnel on alomst 100% of the time, save for the few services that act weird when you use a VPS public IP address(looking at you, Netflix).</p>
+10. For bonus points, run PiHole either on the VPS, or somehwere on your LAN, and point to it for DNS on the smartphone config. This will give you always on ad blocking if you use the full tunnel option. I run my phone with the full tunnel on almost 100% of the time, save for the few services that act weird when you use a VPS public IP address(looking at you, Netflix).</p>
 
       </div>
 
